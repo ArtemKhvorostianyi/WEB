@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Практична №5 — ЕПС</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,600;0,9..40,700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg0: #0c1222;
+            --bg1: #111827;
+            --surface: #ffffff;
+            --text: #0f172a;
+            --muted: #64748b;
+            --accent: #0d9488;
+            --accent-hover: #0f766e;
+            --accent-dim: #ccfbf1;
+            --radius: 16px;
+            --radius-sm: 10px;
+            --shadow: 0 24px 48px -12px rgba(15, 23, 42, 0.45);
+            --font: "DM Sans", system-ui, -apple-system, sans-serif;
+        }
+        *, *::before, *::after { box-sizing: border-box; }
+        body.lab-page {
+            margin: 0;
+            min-height: 100vh;
+            font-family: var(--font);
+            background:
+                radial-gradient(1200px 600px at 80% -10%, rgba(13, 148, 136, 0.22), transparent 55%),
+                radial-gradient(900px 500px at -10% 100%, rgba(59, 130, 246, 0.12), transparent 50%),
+                linear-gradient(165deg, var(--bg0) 0%, var(--bg1) 45%, #0f172a 100%);
+            color: var(--text);
+            padding: clamp(1rem, 3vw, 2rem);
+        }
+        .lab-shell {
+            max-width: 880px;
+            margin: 0 auto;
+            background: var(--surface);
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            padding: clamp(1.25rem, 3vw, 2rem);
+            border: 1px solid rgba(15, 23, 42, 0.06);
+        }
+        .lab-title {
+            margin: 0 0 0.25rem;
+            font-size: clamp(1.35rem, 2.8vw, 1.65rem);
+            font-weight: 700;
+            letter-spacing: -0.02em;
+            color: var(--text);
+        }
+        .lab-lead { margin: 0 0 1.25rem; font-size: 0.9rem; color: var(--muted); }
+        .lab-tabs {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-bottom: 1.25rem;
+            border-bottom: 1px solid #e2e8f0;
+            padding-bottom: 0.75rem;
+        }
+        .lab-tab {
+            padding: 0.55rem 1rem;
+            border-radius: var(--radius-sm);
+            border: 1px solid #e2e8f0;
+            background: #f8fafc;
+            color: var(--muted);
+            font-size: 0.9rem;
+            font-weight: 600;
+            font-family: inherit;
+            cursor: pointer;
+            transition: background 0.15s, color 0.15s, border-color 0.15s, box-shadow 0.15s;
+        }
+        .lab-tab:hover { border-color: #cbd5e1; color: var(--text); }
+        .lab-tab.active {
+            background: linear-gradient(135deg, var(--accent) 0%, #0f766e 100%);
+            color: #fff;
+            border-color: transparent;
+            box-shadow: 0 4px 12px -2px rgba(13, 148, 136, 0.45);
+        }
+        .lab-section-title {
+            font-weight: 700;
+            font-size: 0.85rem;
+            color: var(--accent-hover);
+            margin: 1.1rem 0 0.6rem;
+            letter-spacing: 0.02em;
+        }
+        .lab-section-title:first-of-type { margin-top: 0; }
+        .form-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.75rem 1rem;
+            margin-bottom: 0.65rem;
+        }
+        .form-group {
+            flex: 1;
+            min-width: 140px;
+            display: flex;
+            flex-direction: column;
+            gap: 0.35rem;
+        }
+        .form-group label {
+            font-size: 0.78rem;
+            font-weight: 600;
+            color: var(--muted);
+        }
+        .form-group input {
+            padding: 0.5rem 0.65rem;
+            border: 1px solid #e2e8f0;
+            border-radius: var(--radius-sm);
+            font-size: 0.92rem;
+            font-family: inherit;
+            background: #f8fafc;
+            transition: border-color 0.15s, box-shadow 0.15s;
+        }
+        .form-group input:focus {
+            outline: none;
+            border-color: var(--accent);
+            background: #fff;
+            box-shadow: 0 0 0 3px rgba(13, 148, 136, 0.2);
+        }
+        .lab-btn {
+            margin-top: 1rem;
+            padding: 0.75rem 1.25rem;
+            font-size: 0.95rem;
+            font-weight: 600;
+            font-family: inherit;
+            border: none;
+            border-radius: var(--radius-sm);
+            color: #fff;
+            cursor: pointer;
+            background: linear-gradient(135deg, var(--accent) 0%, #0f766e 100%);
+            box-shadow: 0 4px 14px -3px rgba(13, 148, 136, 0.5);
+            transition: filter 0.12s, transform 0.12s;
+        }
+        .lab-btn:hover { filter: brightness(1.05); }
+        .lab-btn:active { transform: translateY(1px); }
+        .result-box {
+            margin-top: 1.25rem;
+            padding: 1.1rem 1.2rem;
+            background: linear-gradient(180deg, #f0fdfa 0%, #ecfdf5 100%);
+            border: 1px solid #99f6e4;
+            border-radius: var(--radius-sm);
+            font-size: 0.92rem;
+            line-height: 1.55;
+        }
+        .result-box p { margin: 0.35rem 0; }
+        .result-box hr {
+            border: none;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, #99f6e4, transparent);
+            margin: 0.75rem 0;
+        }
+        .hidden { display: none !important; }
+    </style>
+</head>
+<body class="lab-page">
+
+<div class="lab-shell">
+    <h1 class="lab-title">Практична робота №5 — веб-калькулятор ЕПС</h1>
+    <p class="lab-lead">Надійність електропостачання та збитки від недопостачання</p>
+
+    <div class="lab-tabs" role="tablist">
+        <button type="button" class="lab-tab {{if eq .Tab "task1"}}active{{end}}" role="tab" aria-selected="{{if eq .Tab "task1"}}true{{else}}false{{end}}" data-tab="t1" onclick="switchTab('t1', this)">Завдання 1 (Надійність)</button>
+        <button type="button" class="lab-tab {{if eq .Tab "task2"}}active{{end}}" role="tab" aria-selected="{{if eq .Tab "task2"}}true{{else}}false{{end}}" data-tab="t2" onclick="switchTab('t2', this)">Завдання 2 (Збитки)</button>
+    </div>
+
+    <div id="t1" class="{{if ne .Tab "task1"}}hidden{{end}}" role="tabpanel">
+        <form action="/task1" method="POST">
+            <div class="lab-section-title">Елегазовий вимикач 110 кВ</div>
+            <div class="form-row">
+                <div class="form-group"><label>ω (відмов)</label><input type="number" step="any" name="w1" value="0.01"></div>
+                <div class="form-group"><label>t_B (відновлення)</label><input type="number" step="any" name="t1" value="30"></div>
+            </div>
+            <div class="lab-section-title">ПЛ-110 кВ</div>
+            <div class="form-row">
+                <div class="form-group"><label>ω</label><input type="number" step="any" name="w2" value="0.07"></div>
+                <div class="form-group"><label>t_B</label><input type="number" step="any" name="t2" value="10"></div>
+            </div>
+            <div class="lab-section-title">Трансформатор 110/10 кВ</div>
+            <div class="form-row">
+                <div class="form-group"><label>ω</label><input type="number" step="any" name="w3" value="0.015"></div>
+                <div class="form-group"><label>t_B</label><input type="number" step="any" name="t3" value="100"></div>
+            </div>
+            <div class="lab-section-title">Ввідний вимикач 10 кВ</div>
+            <div class="form-row">
+                <div class="form-group"><label>ω</label><input type="number" step="any" name="w4" value="0.02"></div>
+                <div class="form-group"><label>t_B</label><input type="number" step="any" name="t4" value="15"></div>
+            </div>
+            <div class="lab-section-title">Збірні шини 10 кВ</div>
+            <div class="form-row">
+                <div class="form-group"><label>ω</label><input type="number" step="any" name="w5" value="0.18"></div>
+                <div class="form-group"><label>t_B</label><input type="number" step="any" name="t5" value="2"></div>
+            </div>
+            <div class="lab-section-title">Додаткові параметри</div>
+            <div class="form-row">
+                <div class="form-group"><label>k_p.max (плановий простій)</label><input type="number" step="any" name="kpMax" value="43"></div>
+                <div class="form-group"><label>ω секц. вимикача</label><input type="number" step="any" name="wSection" value="0.02"></div>
+            </div>
+            <button type="submit" class="lab-btn">Розрахувати надійність</button>
+        </form>
+
+        {{if .Res1}}
+        <div class="result-box">
+            <p><b>Одноколова система:</b></p>
+            <p>ω_oc: {{printf "%.4f" .Res1.WOc}} рік⁻¹</p>
+            <p>t_B.oc: {{printf "%.2f" .Res1.TBoc}} год.</p>
+            <p>k_a.oc: {{printf "%e" .Res1.KaOc}}</p>
+            <p>k_p.oc: {{printf "%e" .Res1.KpOc}}</p>
+            <hr>
+            <p><b>Двоколова система:</b></p>
+            <p>ω_dk: {{printf "%e" .Res1.WDk}} рік⁻¹</p>
+            <p>ω_ds: {{printf "%.4f" .Res1.WDs}} рік⁻¹</p>
+        </div>
+        {{end}}
+    </div>
+
+    <div id="t2" class="{{if ne .Tab "task2"}}hidden{{end}}" role="tabpanel">
+        <form action="/task2" method="POST">
+            <div class="lab-section-title">Параметри трансформатора</div>
+            <div class="form-row">
+                <div class="form-group"><label>ω (відмов)</label><input type="number" step="any" name="omega" value="0.01"></div>
+                <div class="form-group"><label>t_B (відновлення в роках)</label><input type="number" step="any" name="tB" value="0.045"></div>
+            </div>
+            <div class="form-row">
+                <div class="form-group"><label>P_м (навантаження, кВт)</label><input type="number" step="any" name="pm" value="5120"></div>
+                <div class="form-group"><label>T_м (час максимуму, год)</label><input type="number" step="any" name="tm" value="6451"></div>
+            </div>
+            <div class="form-row">
+                <div class="form-group"><label>k_p (простій)</label><input type="number" step="any" name="kp" value="0.004"></div>
+            </div>
+            <div class="lab-section-title">Питомі збитки (грн/кВт·год)</div>
+            <div class="form-row">
+                <div class="form-group"><label>Аварійні (З_а)</label><input type="number" step="any" name="zA" value="23.6"></div>
+                <div class="form-group"><label>Планові (З_п)</label><input type="number" step="any" name="zP" value="17.6"></div>
+            </div>
+            <button type="submit" class="lab-btn">Розрахувати збитки</button>
+        </form>
+
+        {{if .Res2}}
+        <div class="result-box">
+            <p>Мат. сподівання аварійного недовідпущення: <b>{{printf "%.1f" .Res2.MwA}}</b> кВт·год</p>
+            <p>Мат. сподівання планового недовідпущення: <b>{{printf "%.1f" .Res2.MwP}}</b> кВт·год</p>
+            <p>Математичне сподівання збитків: <b>{{printf "%.2f" .Res2.TotalZ}}</b> грн.</p>
+        </div>
+        {{end}}
+    </div>
+</div>
+
+<script>
+function switchTab(panelId, btn) {
+    document.getElementById('t1').classList.add('hidden');
+    document.getElementById('t2').classList.add('hidden');
+    document.querySelectorAll('.lab-tab').forEach(function (t) {
+        t.classList.remove('active');
+        t.setAttribute('aria-selected', 'false');
+    });
+    document.getElementById(panelId).classList.remove('hidden');
+    btn.classList.add('active');
+    btn.setAttribute('aria-selected', 'true');
+}
+</script>
+
+</body>
+</html>
