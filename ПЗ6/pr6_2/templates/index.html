@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Розрахунок ЕН (метод УД)</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,600;0,9..40,700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg0: #0c1222;
+            --bg1: #111827;
+            --surface: #ffffff;
+            --text: #0f172a;
+            --muted: #64748b;
+            --accent: #0d9488;
+            --accent-hover: #0f766e;
+            --radius: 16px;
+            --radius-sm: 10px;
+            --shadow: 0 24px 48px -12px rgba(15, 23, 42, 0.45);
+            --font: "DM Sans", system-ui, -apple-system, sans-serif;
+        }
+        *, *::before, *::after { box-sizing: border-box; }
+        body.lab-page {
+            margin: 0;
+            min-height: 100vh;
+            font-family: var(--font);
+            background:
+                radial-gradient(1200px 600px at 80% -10%, rgba(13, 148, 136, 0.22), transparent 55%),
+                radial-gradient(900px 500px at -10% 100%, rgba(59, 130, 246, 0.12), transparent 50%),
+                linear-gradient(165deg, var(--bg0) 0%, var(--bg1) 45%, #0f172a 100%);
+            color: var(--text);
+            padding: clamp(0.75rem, 2vw, 1.5rem);
+        }
+        .lab-shell {
+            max-width: 1100px;
+            margin: 0 auto;
+            background: var(--surface);
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            padding: clamp(1rem, 2.5vw, 1.75rem);
+            border: 1px solid rgba(15, 23, 42, 0.06);
+        }
+        .lab-title {
+            margin: 0 0 0.35rem;
+            font-size: clamp(1.2rem, 2.5vw, 1.55rem);
+            font-weight: 700;
+            letter-spacing: -0.02em;
+            color: var(--text);
+        }
+        .lab-lead { margin: 0 0 1rem; font-size: 0.9rem; color: var(--muted); }
+        .lab-section { margin-bottom: 1.25rem; }
+        .lab-section label { font-size: 0.9rem; font-weight: 600; color: var(--muted); }
+        h2.lab-h2 {
+            font-size: 1rem;
+            font-weight: 700;
+            margin: 1.35rem 0 0.65rem;
+            padding-bottom: 0.45rem;
+            border-bottom: 1px solid #e2e8f0;
+            color: var(--accent-hover);
+        }
+        h2.lab-h2:first-of-type { margin-top: 0.5rem; }
+        h3.lab-h3 { font-size: 0.92rem; margin: 1rem 0 0.5rem; color: var(--text); }
+        .table-wrap {
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+            margin: 0.5rem 0 0.75rem;
+            border-radius: var(--radius-sm);
+            border: 1px solid #e2e8f0;
+        }
+        table.lab-table {
+            border-collapse: collapse;
+            width: 100%;
+            min-width: 640px;
+            font-size: 0.82rem;
+        }
+        .lab-table th, .lab-table td {
+            border: 1px solid #e2e8f0;
+            padding: 0.35rem 0.45rem;
+            text-align: center;
+        }
+        .lab-table th {
+            background: linear-gradient(180deg, #f8fafc 0%, #f1f5f9 100%);
+            font-weight: 600;
+            color: var(--muted);
+            white-space: nowrap;
+        }
+        .lab-table td:first-child { text-align: left; }
+        .lab-table input[type="text"],
+        .lab-table input[type="number"] {
+            width: 100%;
+            min-width: 52px;
+            max-width: 88px;
+            padding: 0.35rem 0.4rem;
+            font-size: 0.82rem;
+            font-family: inherit;
+            border: 1px solid #e2e8f0;
+            border-radius: 6px;
+            background: #f8fafc;
+        }
+        .lab-table input.name-input { min-width: 160px; max-width: 220px; }
+        .lab-table input:focus {
+            outline: none;
+            border-color: var(--accent);
+            background: #fff;
+            box-shadow: 0 0 0 2px rgba(13, 148, 136, 0.2);
+        }
+        .lab-note { font-size: 0.8rem; color: var(--muted); margin-top: 0.35rem; line-height: 1.45; }
+        .lab-actions { display: flex; flex-wrap: wrap; gap: 0.6rem; align-items: center; margin-top: 0.75rem; }
+        .lab-btn {
+            padding: 0.65rem 1.1rem;
+            font-size: 0.92rem;
+            font-weight: 600;
+            font-family: inherit;
+            border: none;
+            border-radius: var(--radius-sm);
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-block;
+            transition: filter 0.12s, transform 0.12s;
+        }
+        .lab-btn-primary {
+            color: #fff;
+            background: linear-gradient(135deg, var(--accent) 0%, #0f766e 100%);
+            box-shadow: 0 4px 14px -3px rgba(13, 148, 136, 0.5);
+        }
+        .lab-btn-primary:hover { filter: brightness(1.05); }
+        .lab-btn-primary:active { transform: translateY(1px); }
+        .lab-btn-secondary {
+            color: var(--text);
+            background: #f1f5f9;
+            border: 1px solid #e2e8f0;
+        }
+        .lab-btn-secondary:hover { background: #e2e8f0; }
+        .results-card {
+            background: linear-gradient(180deg, #f0fdfa 0%, #ecfdf5 100%);
+            border: 1px solid #99f6e4;
+            padding: 1rem 1.1rem;
+            margin: 0.75rem 0;
+            max-width: 520px;
+            border-radius: var(--radius-sm);
+            font-size: 0.88rem;
+        }
+        .results-card .row {
+            display: flex;
+            justify-content: space-between;
+            gap: 0.75rem;
+            padding: 0.3rem 0;
+            line-height: 1.4;
+        }
+        .results-card .row .val { font-weight: 600; color: var(--accent-hover); text-align: right; }
+        .results-card hr {
+            border: none;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, #99f6e4, transparent);
+            margin: 0.5rem 0;
+        }
+    </style>
+</head>
+<body class="lab-page">
+
+<div class="lab-shell">
+    <h1 class="lab-title">Розрахунок електричних навантажень (метод УД)</h1>
+    <p class="lab-lead">Практична робота №6 — таблиці ЕП, розрахункові струми та групові коефіцієнти</p>
+
+    <form id="calc-form" action="/calc" method="POST">
+
+        <div class="lab-section">
+            <label>Кількість однакових ШР:</label>
+            <input type="number" name="shrCount" value="{{.ShrCount}}" style="width:4.5rem;margin-left:0.5rem;padding:0.45rem 0.5rem;border:1px solid #e2e8f0;border-radius:8px;font-family:inherit;font-size:0.9rem;">
+        </div>
+
+        <h2 class="lab-h2">Електроприймачі ШР</h2>
+        <div class="table-wrap">
+            <table class="lab-table">
+                <tr>
+                    <th>Назва</th><th>n</th><th>Рн, кВт</th><th>Кв</th><th>tgφ</th>
+                    <th>η</th><th>cosφ</th><th>Uн, кВ</th>
+                </tr>
+                {{range $i, $ep := .ShrList}}
+                <tr>
+                    <td><input type="text" class="name-input" name="shr_name_{{$i}}" value="{{$ep.Name}}"></td>
+                    <td><input type="number" name="shr_n_{{$i}}" value="{{$ep.N}}"></td>
+                    <td><input type="text" name="shr_pn_{{$i}}" value="{{f1 $ep.Pn}}"></td>
+                    <td><input type="text" name="shr_kv_{{$i}}" value="{{f2 $ep.Kv}}"></td>
+                    <td><input type="text" name="shr_tgf_{{$i}}" value="{{f2 $ep.Tgf}}"></td>
+                    <td><input type="text" name="shr_eta_{{$i}}" value="{{f2 $ep.Eta}}"></td>
+                    <td><input type="text" name="shr_cosf_{{$i}}" value="{{f1 $ep.Cosf}}"></td>
+                    <td><input type="text" name="shr_u_{{$i}}" value="{{f2 $ep.U}}"></td>
+                </tr>
+                {{end}}
+            </table>
+        </div>
+        <p class="lab-note">Щоб додати ЕП — допишіть рядок і перезавантажте. Щоб видалити — очистіть назву.</p>
+
+        <h2 class="lab-h2">Крупні ЕП (живлення від ТП)</h2>
+        <div class="table-wrap">
+            <table class="lab-table">
+                <tr>
+                    <th>Назва</th><th>n</th><th>Рн, кВт</th><th>Кв</th><th>tgφ</th>
+                    <th>η</th><th>cosφ</th><th>Uн, кВ</th>
+                </tr>
+                {{range $i, $ep := .BigList}}
+                <tr>
+                    <td><input type="text" class="name-input" name="big_name_{{$i}}" value="{{$ep.Name}}"></td>
+                    <td><input type="number" name="big_n_{{$i}}" value="{{$ep.N}}"></td>
+                    <td><input type="text" name="big_pn_{{$i}}" value="{{f1 $ep.Pn}}"></td>
+                    <td><input type="text" name="big_kv_{{$i}}" value="{{f2 $ep.Kv}}"></td>
+                    <td><input type="text" name="big_tgf_{{$i}}" value="{{f2 $ep.Tgf}}"></td>
+                    <td><input type="text" name="big_eta_{{$i}}" value="{{f2 $ep.Eta}}"></td>
+                    <td><input type="text" name="big_cosf_{{$i}}" value="{{f1 $ep.Cosf}}"></td>
+                    <td><input type="text" name="big_u_{{$i}}" value="{{f2 $ep.U}}"></td>
+                </tr>
+                {{end}}
+            </table>
+        </div>
+    </form>
+
+    <div class="lab-actions">
+        <button type="submit" form="calc-form" class="lab-btn lab-btn-primary">Розрахувати</button>
+        <a href="/" class="lab-btn lab-btn-secondary">Контрольний приклад</a>
+    </div>
+
+    {{if .Calculated}}
+
+    <h2 class="lab-h2">Розрахункові струми ЕП (І рівень)</h2>
+    <div class="table-wrap">
+        <table class="lab-table">
+            <tr>
+                <th>Назва</th><th>n</th><th>Рн</th><th>nРн</th><th>Кв</th><th>tgφ</th>
+                <th>nРнКв</th><th>nРнКвtgφ</th><th>nРн²</th><th>Ір, А</th>
+            </tr>
+            {{range .ShrList}}
+            <tr>
+                <td style="text-align:left">{{.Name}}</td>
+                <td>{{.N}}</td>
+                <td>{{f1 .Pn}}</td>
+                <td>{{f1 (.NPn)}}</td>
+                <td>{{f2 .Kv}}</td>
+                <td>{{f2 .Tgf}}</td>
+                <td>{{f2 (.NPnKv)}}</td>
+                <td>{{f2 (.NPnKvTg)}}</td>
+                <td>{{f0 (.NPn2)}}</td>
+                <td>{{f1 (.Ip)}}</td>
+            </tr>
+            {{end}}
+        </table>
+    </div>
+
+    <h3 class="lab-h3">ШР1 = ШР2 = ШР3 (Т₀ = 10 хв, табл. 6.3)</h3>
+    <div class="results-card">
+        <div class="row"><span>Σ(n·Рн)</span><span class="val">{{f2 .ResSHR.SumNPn}} кВт</span></div>
+        <div class="row"><span>Σ(n·Рн·Кв)</span><span class="val">{{f2 .ResSHR.SumNPnKv}} кВт</span></div>
+        <div class="row"><span>Σ(n·Рн·Кв·tgφ)</span><span class="val">{{f2 .ResSHR.SumNPnKvTg}} квар</span></div>
+        <div class="row"><span>Σ(n·Рн²)</span><span class="val">{{f0 .ResSHR.SumNPn2}}</span></div>
+        <hr>
+        <div class="row"><span>Кв груп.</span><span class="val">{{f4 .ResSHR.KvGroup}}</span></div>
+        <div class="row"><span>ne (raw={{f2 .ResSHR.NeRaw}})</span><span class="val">{{.ResSHR.Ne}}</span></div>
+        <div class="row"><span>Кр (табл. {{.ResSHR.TableName}})</span><span class="val">{{f2 .ResSHR.Kp}}</span></div>
+        <hr>
+        <div class="row"><span>Рр</span><span class="val">{{f2 .ResSHR.Pp}} кВт</span></div>
+        <div class="row"><span>Qр</span><span class="val">{{f2 .ResSHR.Qp}} квар</span></div>
+        <div class="row"><span>Sр</span><span class="val">{{f2 .ResSHR.Sp}} кВА</span></div>
+        <div class="row"><span>Ір</span><span class="val">{{f2 .ResSHR.IpGroup}} А</span></div>
+    </div>
+
+    {{if .BigList}}
+    <h2 class="lab-h2">Крупні ЕП</h2>
+    <div class="table-wrap">
+        <table class="lab-table">
+            <tr>
+                <th>Назва</th><th>n</th><th>Рн</th><th>nРн</th><th>Кв</th><th>tgφ</th>
+                <th>nРнКв</th><th>nРнКвtgφ</th><th>nРн²</th><th>Ір, А</th>
+            </tr>
+            {{range .BigList}}
+            <tr>
+                <td style="text-align:left">{{.Name}}</td>
+                <td>{{.N}}</td>
+                <td>{{f1 .Pn}}</td>
+                <td>{{f1 (.NPn)}}</td>
+                <td>{{f2 .Kv}}</td>
+                <td>{{f2 .Tgf}}</td>
+                <td>{{f2 (.NPnKv)}}</td>
+                <td>{{f2 (.NPnKvTg)}}</td>
+                <td>{{f0 (.NPn2)}}</td>
+                <td>{{f1 (.Ip)}}</td>
+            </tr>
+            {{end}}
+        </table>
+    </div>
+    {{end}}
+
+    <h2 class="lab-h2">Цех в цілому (Т₀ = 2,5 год, табл. 6.4)</h2>
+    <div class="results-card">
+        <div class="row"><span>Σ(n·Рн)</span><span class="val">{{f2 .ResWorkshop.SumNPn}} кВт</span></div>
+        <div class="row"><span>Σ(n·Рн·Кв)</span><span class="val">{{f2 .ResWorkshop.SumNPnKv}} кВт</span></div>
+        <div class="row"><span>Σ(n·Рн·Кв·tgφ)</span><span class="val">{{f2 .ResWorkshop.SumNPnKvTg}} квар</span></div>
+        <div class="row"><span>Σ(n·Рн²)</span><span class="val">{{f0 .ResWorkshop.SumNPn2}}</span></div>
+        <hr>
+        <div class="row"><span>Кв цеху</span><span class="val">{{f4 .ResWorkshop.KvGroup}}</span></div>
+        <div class="row"><span>ne (raw={{f2 .ResWorkshop.NeRaw}})</span><span class="val">{{.ResWorkshop.Ne}}</span></div>
+        <div class="row"><span>Кр (табл. {{.ResWorkshop.TableName}})</span><span class="val">{{f2 .ResWorkshop.Kp}}</span></div>
+        <hr>
+        <div class="row"><span>Рр</span><span class="val">{{f2 .ResWorkshop.Pp}} кВт</span></div>
+        <div class="row"><span>Qр</span><span class="val">{{f2 .ResWorkshop.Qp}} квар</span></div>
+        <div class="row"><span>Sр</span><span class="val">{{f2 .ResWorkshop.Sp}} кВА</span></div>
+        <div class="row"><span>Ір</span><span class="val">{{f2 .ResWorkshop.IpGroup}} А</span></div>
+    </div>
+
+    {{end}}
+</div>
+
+</body>
+</html>
