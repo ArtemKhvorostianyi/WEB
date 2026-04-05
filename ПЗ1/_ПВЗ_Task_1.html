@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Калькулятор палива (Go)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,600;0,9..40,700;1,9..40,400&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg0: #0c1222;
+  --bg1: #111827;
+  --surface: #ffffff;
+  --text: #0f172a;
+  --muted: #64748b;
+  --accent: #0d9488;
+  --accent-dim: #ccfbf1;
+  --accent-hover: #0f766e;
+  --danger: #b91c1c;
+  --radius: 16px;
+  --radius-sm: 10px;
+  --shadow: 0 24px 48px -12px rgba(15, 23, 42, 0.45);
+  --font: "DM Sans", system-ui, -apple-system, sans-serif;
+}
+*, *::before, *::after { box-sizing: border-box; }
+body.lab-page {
+  margin: 0;
+  min-height: 100vh;
+  font-family: var(--font);
+  background:
+    radial-gradient(1200px 600px at 80% -10%, rgba(13, 148, 136, 0.22), transparent 55%),
+    radial-gradient(900px 500px at -10% 100%, rgba(59, 130, 246, 0.12), transparent 50%),
+    linear-gradient(165deg, var(--bg0) 0%, var(--bg1) 45%, #0f172a 100%);
+  color: var(--text);
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  padding: clamp(1.25rem, 4vw, 2.5rem);
+}
+.lab-shell {
+  width: 100%;
+  max-width: 1000px;
+  background: var(--surface);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  padding: clamp(1.5rem, 4vw, 2.25rem);
+  border: 1px solid rgba(15, 23, 42, 0.06);
+}
+.lab-title {
+  margin: 0 0 0.35rem;
+  text-align: center;
+  font-size: clamp(1.5rem, 3vw, 1.85rem);
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: var(--text);
+}
+.lab-lead {
+  margin: 0 0 1.5rem;
+  text-align: center;
+  font-size: 0.95rem;
+  color: var(--muted);
+}
+.lab-grid {
+  display: grid;
+  gap: 0.9rem 1rem;
+  grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+}
+.lab-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+.lab-label {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--muted);
+  letter-spacing: 0.02em;
+}
+.lab-input {
+  width: 100%;
+  padding: 0.55rem 0.75rem;
+  border-radius: var(--radius-sm);
+  border: 1px solid #e2e8f0;
+  font-size: 0.95rem;
+  font-family: inherit;
+  background: #f8fafc;
+  transition: border-color 0.15s, box-shadow 0.15s, background 0.15s;
+}
+.lab-input:hover { border-color: #cbd5e1; }
+.lab-input:focus {
+  outline: none;
+  border-color: var(--accent);
+  background: #fff;
+  box-shadow: 0 0 0 3px rgba(13, 148, 136, 0.2);
+}
+.lab-btn {
+  margin-top: 1.35rem;
+  width: 100%;
+  padding: 0.85rem 1rem;
+  font-size: 1rem;
+  font-weight: 600;
+  font-family: inherit;
+  border: none;
+  border-radius: var(--radius-sm);
+  color: #fff;
+  cursor: pointer;
+  background: linear-gradient(135deg, var(--accent) 0%, #0f766e 100%);
+  box-shadow: 0 4px 14px -3px rgba(13, 148, 136, 0.55);
+  transition: transform 0.12s, box-shadow 0.12s, filter 0.12s;
+}
+.lab-btn:hover {
+  filter: brightness(1.05);
+  box-shadow: 0 6px 20px -4px rgba(13, 148, 136, 0.6);
+}
+.lab-btn:active { transform: translateY(1px); }
+.lab-error {
+  margin-top: 1rem;
+  color: var(--danger);
+  text-align: center;
+  font-weight: 600;
+  font-size: 0.95rem;
+}
+.lab-results { margin-top: 1.5rem; }
+.lab-card {
+  background: linear-gradient(180deg, #f8fafc 0%, #f1f5f9 100%);
+  padding: 1rem 1.15rem;
+  border-radius: var(--radius-sm);
+  margin-bottom: 0.85rem;
+  border: 1px solid #e2e8f0;
+}
+.lab-card h3 {
+  margin: 0 0 0.65rem;
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--accent-hover);
+  letter-spacing: -0.01em;
+}
+.lab-card code, .lab-card {
+  font-size: 0.92rem;
+  line-height: 1.55;
+  color: var(--text);
+}
+</style>
+</head>
+<body class="lab-page">
+
+<div class="lab-shell">
+  <h1 class="lab-title">Калькулятор складу палива</h1>
+  <p class="lab-lead">Введіть масові частки компонентів робочої маси палива (%)</p>
+
+  <form method="POST">
+    <div class="lab-grid">
+      <div class="lab-field"><label class="lab-label">HP, %</label><input class="lab-input" name="Hp" value="1.4"></div>
+      <div class="lab-field"><label class="lab-label">CP, %</label><input class="lab-input" name="Cp" value="70.5"></div>
+      <div class="lab-field"><label class="lab-label">SP, %</label><input class="lab-input" name="Sp" value="1.7"></div>
+      <div class="lab-field"><label class="lab-label">NP, %</label><input class="lab-input" name="Np" value="0.8"></div>
+      <div class="lab-field"><label class="lab-label">OP, %</label><input class="lab-input" name="Op" value="1.9"></div>
+      <div class="lab-field"><label class="lab-label">WP, %</label><input class="lab-input" name="Wp" value="7.0"></div>
+      <div class="lab-field"><label class="lab-label">AP, %</label><input class="lab-input" name="Ap" value="16.7"></div>
+    </div>
+    <button type="submit" class="lab-btn">Обчислити</button>
+  </form>
+
+  <div class="lab-error">{{.Error}}</div>
+
+  {{if .Show}}
+  <div class="lab-results">
+    <div class="lab-card">
+      <h3>Коефіцієнти переходу</h3>
+      Kрс = {{printf "%.3f" .Krs}} <br>
+      Kрг = {{printf "%.3f" .Krg}}
+    </div>
+    <div class="lab-card">
+      <h3>Склад сухої маси</h3>
+      Hc = {{printf "%.2f" .Hc}}% <br>
+      Cc = {{printf "%.2f" .Cc}}% <br>
+      Sc = {{printf "%.2f" .Sc}}% <br>
+      Nc = {{printf "%.3f" .Nc}}% <br>
+      Oc = {{printf "%.2f" .Oc}}% <br>
+      Ac = {{printf "%.2f" .Ac}}%
+    </div>
+    <div class="lab-card">
+      <h3>Склад горючої маси</h3>
+      Hg = {{printf "%.2f" .Hg}}% <br>
+      Cg = {{printf "%.2f" .Cg}}% <br>
+      Sg = {{printf "%.2f" .Sg}}% <br>
+      Ng = {{printf "%.3f" .Ng}}% <br>
+      Og = {{printf "%.2f" .Og}}%
+    </div>
+    <div class="lab-card">
+      <h3>Нижча теплота згоряння</h3>
+      Qr = {{printf "%.3f" .Qr}} МДж/кг <br>
+      Qd = {{printf "%.3f" .Qd}} МДж/кг <br>
+      Qdaf = {{printf "%.3f" .Qdaf}} МДж/кг
+    </div>
+  </div>
+  {{end}}
+</div>
+
+</body>
+</html>
