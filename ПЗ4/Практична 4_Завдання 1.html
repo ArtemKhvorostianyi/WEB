@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Калькулятор кабелю 10 кВ</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,600;0,9..40,700;1,9..40,400&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg0: #0c1222;
+  --bg1: #111827;
+  --surface: #ffffff;
+  --text: #0f172a;
+  --muted: #64748b;
+  --accent: #0d9488;
+  --accent-hover: #0f766e;
+  --success: #047857;
+  --radius: 16px;
+  --radius-sm: 10px;
+  --shadow: 0 24px 48px -12px rgba(15, 23, 42, 0.45);
+  --font: "DM Sans", system-ui, -apple-system, sans-serif;
+}
+*, *::before, *::after { box-sizing: border-box; }
+body.lab-page {
+  margin: 0;
+  min-height: 100vh;
+  font-family: var(--font);
+  background:
+    radial-gradient(1200px 600px at 80% -10%, rgba(13, 148, 136, 0.22), transparent 55%),
+    radial-gradient(900px 500px at -10% 100%, rgba(59, 130, 246, 0.12), transparent 50%),
+    linear-gradient(165deg, var(--bg0) 0%, var(--bg1) 45%, #0f172a 100%);
+  color: var(--text);
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  padding: clamp(1.25rem, 4vw, 2.5rem);
+}
+.lab-shell {
+  width: 100%;
+  max-width: 900px;
+  background: var(--surface);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  padding: clamp(1.5rem, 4vw, 2.25rem);
+  border: 1px solid rgba(15, 23, 42, 0.06);
+}
+.lab-title {
+  margin: 0 0 0.35rem;
+  text-align: center;
+  font-size: clamp(1.45rem, 3vw, 1.8rem);
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: var(--text);
+}
+.lab-lead {
+  margin: 0 0 1.75rem;
+  text-align: center;
+  font-size: 0.95rem;
+  color: var(--muted);
+}
+.lab-grid-2 {
+  display: grid;
+  gap: 1rem;
+  grid-template-columns: 1fr;
+}
+@media (min-width: 640px) {
+  .lab-grid-2 { grid-template-columns: repeat(2, 1fr); }
+}
+.lab-field {
+  background: #f8fafc;
+  padding: 1rem;
+  border-radius: var(--radius-sm);
+  border: 1px solid #e2e8f0;
+}
+.lab-label {
+  display: block;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--muted);
+}
+.lab-input {
+  margin-top: 0.5rem;
+  width: 100%;
+  padding: 0.55rem 0.75rem;
+  border-radius: var(--radius-sm);
+  border: 1px solid #e2e8f0;
+  font-size: 0.95rem;
+  font-family: inherit;
+  background: #fff;
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+.lab-input:focus {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(13, 148, 136, 0.2);
+}
+.lab-btn {
+  margin-top: 1.5rem;
+  width: 100%;
+  padding: 0.85rem 1rem;
+  font-size: 1rem;
+  font-weight: 600;
+  font-family: inherit;
+  border: none;
+  border-radius: var(--radius-sm);
+  color: #fff;
+  cursor: pointer;
+  background: linear-gradient(135deg, var(--accent) 0%, #0f766e 100%);
+  box-shadow: 0 4px 14px -3px rgba(13, 148, 136, 0.55);
+  transition: transform 0.12s, filter 0.12s;
+}
+.lab-btn:hover { filter: brightness(1.05); }
+.lab-btn:active { transform: translateY(1px); }
+.lab-panel {
+  margin-top: 1.75rem;
+  padding: 1.35rem;
+  border-radius: var(--radius-sm);
+  background: linear-gradient(180deg, #f8fafc 0%, #f1f5f9 100%);
+  border: 1px solid #e2e8f0;
+  font-size: 0.95rem;
+  line-height: 1.65;
+}
+.lab-panel p { margin: 0.55rem 0; color: var(--text); }
+.lab-highlight {
+  margin-top: 0.75rem;
+  padding: 0.9rem 1rem;
+  border-radius: var(--radius-sm);
+  background: #ecfdf5;
+  border: 1px solid #6ee7b7;
+  color: var(--success);
+  font-weight: 700;
+  font-size: 1.05rem;
+}
+.lab-sub {
+  color: var(--muted);
+  font-size: 0.9rem;
+  font-weight: 400;
+}
+</style>
+</head>
+<body class="lab-page">
+
+<div class="lab-shell">
+  <h1 class="lab-title">Калькулятор вибору кабелю 10 кВ</h1>
+  <p class="lab-lead">Розрахунок перерізу кабелю</p>
+
+  <form method="POST">
+    <div class="lab-grid-2">
+      <div class="lab-field">
+        <label class="lab-label">U (кВ)</label>
+        <input class="lab-input" name="voltage" value="{{.U}}">
+      </div>
+      <div class="lab-field">
+        <label class="lab-label">Sm (кВА)</label>
+        <input class="lab-input" name="sm" value="{{.Sm}}">
+      </div>
+      <div class="lab-field">
+        <label class="lab-label">Ik (кА)</label>
+        <input class="lab-input" name="ik" value="{{.Ik}}">
+      </div>
+      <div class="lab-field">
+        <label class="lab-label">t (с)</label>
+        <input class="lab-input" name="time" value="{{.T}}">
+      </div>
+      <div class="lab-field">
+        <label class="lab-label">Jек</label>
+        <input class="lab-input" name="jek" value="{{.Jek}}">
+      </div>
+      <div class="lab-field">
+        <label class="lab-label">C</label>
+        <input class="lab-input" name="c" value="{{.C}}">
+      </div>
+    </div>
+    <button type="submit" class="lab-btn">Розрахувати</button>
+  </form>
+
+  {{if .Show}}
+  <div class="lab-panel">
+    <p><b>Розрахунковий струм:</b> {{printf "%.2f" .Im}} A</p>
+    <p><b>Післяаварійний струм:</b> {{printf "%.2f" .Ipa}} A</p>
+    <p><b>Економічний переріз:</b> {{printf "%.2f" .Sek}} мм²</p>
+    <p><b>Мінімальний переріз (КЗ):</b> {{printf "%.2f" .Smin}} мм²</p>
+    <div class="lab-highlight">Рекомендований кабель: {{.Cable}} мм²</div>
+    <p class="lab-sub">Тип: ААБ 10 (3×{{.Cable}})</p>
+  </div>
+  {{end}}
+</div>
+
+</body>
+</html>
